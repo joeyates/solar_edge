@@ -8,6 +8,23 @@ defmodule SolarEdge.SiteTest do
 
   setup :verify_on_exit!
 
+  @moduletag site: %Site{
+    id: 1,
+    client: Client.new("my_key"),
+    location: %Location{time_zone: @time_zone}
+  }
+  @moduletag last_midnight: DateTime.now!(@time_zone)
+    |> DateTime.to_date()
+    |> DateTime.new!(~T[00:00:00], @time_zone)
+  @moduletag next_midnight: DateTime.now!(@time_zone)
+    |> DateTime.add(1, :day)
+    |> DateTime.to_date()
+    |> DateTime.new!(~T[00:00:00], @time_zone)
+  @moduletag day_after_midnight: DateTime.now!(@time_zone)
+    |> DateTime.add(2, :day)
+    |> DateTime.to_date()
+    |> DateTime.new!(~T[00:00:00], @time_zone)
+
   describe ".new_from_api/2" do
     @describetag client: Client.new("my_key")
     @describetag data: %{id: 42, location: %{address: "32 High Street"}}
@@ -29,33 +46,48 @@ defmodule SolarEdge.SiteTest do
     end
   end
 
-  describe "power/2" do
-    @describetag site: %Site{
-      id: 1,
-      client: Client.new("my_key"),
-      location: %Location{time_zone: @time_zone}
-    }
+  describe "energy/2" do
     @describetag today: DateTime.now!(@time_zone)
       |> DateTime.to_date()
-      |> DateTime.new!(~T[00:00:00], @time_zone)
     @describetag tomorrow: DateTime.now!(@time_zone)
-      |> DateTime.add(1, :day)
       |> DateTime.to_date()
-      |> DateTime.new!(~T[00:00:00], @time_zone)
-    @describetag day_after: DateTime.now!(@time_zone)
-      |> DateTime.add(2, :day)
-      |> DateTime.to_date()
-      |> DateTime.new!(~T[00:00:00], @time_zone)
+      |> Date.add(1)
 
     setup context do
-      today = context.today |> SolarEdge.Transform.datetime_to_api_string()
-      day_after = context.day_after |> SolarEdge.Transform.datetime_to_api_string()
+      last_midnight = context.last_midnight |> SolarEdge.Transform.datetime_to_api_string()
+      day_after_midnight = context.day_after_midnight |> SolarEdge.Transform.datetime_to_api_string()
+      resp = %Req.Response{
+        body: %{
+          "energy" => %{
+            "values" => [
+              %{date: last_midnight, value: 42},
+              %{date: day_after_midnight, value: 99}
+            ]
+          }
+        }
+      }
+      stub(SolarEdge.MockClient, :get!, fn _, _, _ -> resp end)
+
+      :ok
+    end
+
+    test "it returns readings", context do
+      {_, readings} = Site.energy(context.site, start_time: context.today, end_time: context.tomorrow)
+
+      assert %PowerReading{value: 42} = hd(readings)
+    end
+  end
+
+  describe "power/2" do
+    setup context do
+      last_midnight = context.last_midnight |> SolarEdge.Transform.datetime_to_api_string()
+      day_after_midnight = context.day_after_midnight |> SolarEdge.Transform.datetime_to_api_string()
       resp = %Req.Response{
         body: %{
           "power" => %{
             "values" => [
-              %{date: today, value: 42},
-              %{date: day_after, value: 99}
+              %{date: last_midnight, value: 42},
+              %{date: day_after_midnight, value: 99}
             ]
           }
         }
@@ -66,31 +98,31 @@ defmodule SolarEdge.SiteTest do
     end
 
     test "it returns readings", context do
-      {_, readings} = Site.power(context.site, start_time: context.today, end_time: context.tomorrow)
+      {_, readings} = Site.power(context.site, start_time: context.last_midnight, end_time: context.next_midnight)
 
       assert %PowerReading{value: 42} = hd(readings)
     end
 
     test "it defaults to the last month", context do
       month_ago =
-        context.tomorrow
+        context.next_midnight
         |> DateTime.add(-30, :day)
         |> SolarEdge.Transform.datetime_to_api_string()
-      tomorrow = context.tomorrow |> SolarEdge.Transform.datetime_to_api_string()
-      expected_params = [startTime: month_ago, endTime: tomorrow]
+      next_midnight = context.next_midnight |> SolarEdge.Transform.datetime_to_api_string()
+      expected_params = [startTime: month_ago, endTime: next_midnight]
       expect(SolarEdge.MockClient, :get!, fn _, _, params: ^expected_params -> context.resp end)
 
       Site.power(context.site)
     end
 
     test "it skips returned readings after the end of the requested range", context do
-      {_, readings} = Site.power(context.site, start_time: context.today, end_time: context.tomorrow)
+      {_, readings} = Site.power(context.site, start_time: context.last_midnight, end_time: context.next_midnight)
 
       assert length(readings) == 1
     end
 
     test "it returns :ok", context do
-      assert {:ok, _readings} = Site.power(context.site, start_time: context.today, end_time: context.tomorrow)
+      assert {:ok, _readings} = Site.power(context.site, start_time: context.last_midnight, end_time: context.next_midnight)
     end
   end
 end

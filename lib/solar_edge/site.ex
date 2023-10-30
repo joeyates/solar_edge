@@ -38,6 +38,56 @@ defmodule SolarEdge.Site do
   end
 
   @doc """
+  Fetch the site's energy production.
+  """
+  def energy(%__MODULE__{} = site, opts \\ []) do
+    period_end_date = opts[:end_date] || today(site)
+    period_start_date = opts[:start_date] || Date.add(period_end_date, -30)
+
+    Stream.resource(
+      fn -> period_start_date end,
+      fn start_date ->
+        if start_date do
+          end_date = Date.add(start_date, 30)
+          results = energy_page(site, start_date, end_date)
+          last = hd(Enum.reverse(results))
+
+          if Date.compare(last.date_time, period_end_date) == :lt do
+            next_start = Date.add(last.date_time, 1)
+
+            {results, next_start}
+          else
+            in_range =
+              results
+              |> Enum.filter(& Date.compare(&1.date_time, period_end_date) != :gt)
+            {in_range, nil}
+          end
+
+        else
+          {:halt, nil}
+        end
+      end,
+      fn _ -> nil end
+    )
+    |> Enum.to_list()
+    |> then(& {:ok, &1})
+  end
+
+  defp energy_page(site, start_date, end_date) do
+    path = "/site/#{site.id}/energy"
+
+    params = [
+      startDate: Date.to_iso8601(start_date),
+      endDate: Date.to_iso8601(end_date)
+    ]
+
+    @client.get!(site.client, path, params: params)
+    |> get_in([Access.key!(:body), "energy", "values"])
+    |> Transform.symbolize()
+    |> Enum.map(&PowerReading.new_from_api!(&1, site))
+  end
+
+  @doc """
   Fetch power data in 15' slices.
   Paginates if the requested time range is more than a month.
 
