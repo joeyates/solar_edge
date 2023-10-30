@@ -4,7 +4,9 @@ defmodule SolarEdge.Site do
 
   https://knowledge-center.solaredge.com/sites/kc/files/se_monitoring_api.pdf
   """
-  alias SolarEdge.{Client, Location, PowerReading, Transform}
+  alias SolarEdge.{Location, PowerReading, Transform}
+
+  @client Application.compile_env(:solar_edge, :solar_edge_client, SolarEdge.Client)
 
   @keys ~w(
     id
@@ -88,7 +90,7 @@ defmodule SolarEdge.Site do
       endTime: Transform.datetime_to_api_string(end_time)
     ]
 
-    Client.get!(site.client, path, params: params)
+    @client.get!(site.client, path, params: params)
     |> get_in([Access.key!(:body), "power", "values"])
     |> Transform.symbolize()
     |> Enum.map(&PowerReading.new_from_api!(&1, site))
