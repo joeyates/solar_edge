@@ -4,14 +4,14 @@ defmodule SolarEdge.Account do
 
   https://knowledge-center.solaredge.com/sites/kc/files/se_monitoring_api.pdf
   """
-  alias SolarEdge.Client
+  alias SolarEdge.{Client, Transform}
 
   def site_list(%Client{} = client) do
     path = "/sites/list"
 
     Client.get(client, path)
     |> get_in([Access.key!(:body), "sites", "site"])
-    |> Client.symbolize()
+    |> Transform.symbolize()
     |> Enum.map(&SolarEdge.Site.new_from_api(&1, client))
   end
 end
