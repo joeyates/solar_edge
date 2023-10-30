@@ -1,6 +1,17 @@
 defmodule SolarEdge.PowerReading do
   defstruct ~w(date_time site value)a
 
+  @doc ~S"""
+  Converts a Map of API power data to a PowerReading
+
+  iex> location = %SolarEdge.Location{time_zone: "Europe/Berlin"}
+  iex> site = %SolarEdge.Site{location: location}
+  iex> reading = SolarEdge.PowerReading.new_from_api(%{date: "2023-10-18 00:15:00", value: 3}, site)
+  iex> reading.date_time
+  #DateTime<2023-10-18 00:15:00+02:00 CEST Europe/Berlin>
+  iex> reading.value
+  3
+  """
   def new_from_api(data, site) do
     naive = NaiveDateTime.from_iso8601!(data.date)
 
