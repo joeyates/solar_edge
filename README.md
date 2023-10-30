@@ -29,3 +29,10 @@ See test coverage
 ```
 mix coveralls
 ```
+
+Generate HTML coverage report
+
+```
+mix coveralls.html
+open cover/excoveralls.html
+```
