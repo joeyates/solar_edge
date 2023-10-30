@@ -17,27 +17,27 @@ defmodule SolarEdge.Transform do
   Transform API data into a structure where Map keys
   are snake-cased and atomized
 
-  iex> SolarEdge.Client.symbolize("a")
+  iex> SolarEdge.Transform.symbolize("a")
   :a
 
-  iex> SolarEdge.Client.symbolize("aBc")
+  iex> SolarEdge.Transform.symbolize("aBc")
   :a_bc
 
   Keys are transformed to snake only when the transformation is reversible
 
-  iex> SolarEdge.Client.symbolize("aBC")
+  iex> SolarEdge.Transform.symbolize("aBC")
   :aBC
 
-  iex> SolarEdge.Client.symbolize({1, "a"})
+  iex> SolarEdge.Transform.symbolize({1, "a"})
   {1, "a"}
 
-  iex> SolarEdge.Client.symbolize(%{"a" => 1})
+  iex> SolarEdge.Transform.symbolize(%{"a" => 1})
   %{a: 1}
 
-  iex> SolarEdge.Client.symbolize(["a"])
+  iex> SolarEdge.Transform.symbolize(["a"])
   ["a"]
 
-  iex> SolarEdge.Client.symbolize(%{"a" => [%{"b" => "c"}]})
+  iex> SolarEdge.Transform.symbolize(%{"a" => [%{"b" => "c"}]})
   %{a: [%{b: "c"}]}
   """
   def symbolize(data) when is_map(data) do
