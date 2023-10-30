@@ -12,15 +12,29 @@ defmodule SolarEdge.AccountTest do
       }
     }
     stub(SolarEdge.MockClient, :get!, fn _, _ -> resp end)
-
-    client = SolarEdge.Client.new("my_key")
-    %{client: client}
+    :ok
   end
 
-  test "it returns the sites", %{client: client} do
-    {:ok, sites} = SolarEdge.Account.site_list(client)
+  @moduletag client: SolarEdge.Client.new("my_key")
 
-    assert %SolarEdge.Site{} = hd(sites)
+  describe "site_list/1" do
+    test "it returns the sites", %{client: client} do
+      {:ok, sites} = SolarEdge.Account.site_list(client)
+
+      assert %SolarEdge.Site{id: 42} = hd(sites)
+    end
+
+    test "it returns :ok", %{client: client} do
+      assert {:ok, _} = SolarEdge.Account.site_list(client)
+    end
+  end
+
+  describe "site_list!/1" do
+    test "it returns the sites", %{client: client} do
+      sites = SolarEdge.Account.site_list!(client)
+
+      assert %SolarEdge.Site{id: 42} = hd(sites)
+    end
   end
 end
 
