@@ -3,12 +3,18 @@ defmodule SolarEdge.Client do
 
   defstruct ~w(api_key)a
 
+  @type t :: %__MODULE__{
+    api_key: String.t()
+  }
+
   @base_url "https://monitoringapi.solaredge.com"
 
   def new(api_key) do
     %__MODULE__{api_key: api_key}
   end
 
+  @callback get(SolarEdge.Client.t(), String.t(), Keyword.t()) :: {:ok, Req.Response.t()}
+  @callback get(SolarEdge.Client.t(), String.t()) :: {:ok, Req.Response.t()}
   def get(%__MODULE__{} = client, path, opts \\ []) do
     params = opts[:params] || []
     url = Path.join(@base_url, path)
@@ -21,6 +27,8 @@ defmodule SolarEdge.Client do
     |> then(& {:ok, &1})
   end
 
+  @callback get!(SolarEdge.Client.t(), String.t(), Keyword.t()) :: Req.Response.t()
+  @callback get!(SolarEdge.Client.t(), String.t()) :: Req.Response.t()
   def get!(client, path, opts \\ []) do
     {:ok, %Req.Response{status: 200} = response} = get(client, path, opts)
     response

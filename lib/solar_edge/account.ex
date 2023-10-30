@@ -6,10 +6,16 @@ defmodule SolarEdge.Account do
   """
   alias SolarEdge.{Client, Site, Transform}
 
+  @client Application.compile_env(:solar_edge, :client, SolarEdge.Client)
+
+  @doc ~S"""
+  Fetch a list of sites accessible by the supplied client API key
+  """
+  @callback site_list(SolarEdge.Client.t()) :: {:ok, [SolarEdge.Site.t()]}
   def site_list(%Client{} = client) do
     path = "/sites/list"
 
-    Client.get!(client, path)
+    @client.get!(client, path)
     |> get_in([Access.key!(:body), "sites", "site"])
     |> Transform.symbolize()
     |> Enum.map(&Site.new_from_api!(&1, client))
