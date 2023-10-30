@@ -10,7 +10,14 @@ defmodule SolarEdge.MixProject do
       elixirc_paths: elixirc_paths(Mix.env),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      consolidate_protocols: Mix.env() != :test
+      consolidate_protocols: Mix.env() != :test,
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ]
     ]
   end
 
@@ -28,6 +35,7 @@ defmodule SolarEdge.MixProject do
 
   defp deps do
     [
+      {:excoveralls, ">= 0.0.0", only: :test},
       {:mox, ">= 0.0.0", only: :test, runtime: false},
       {:req, "~> 0.4.5"},
       {:time_zone_info, "~> 0.6.5"}

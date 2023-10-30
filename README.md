@@ -15,3 +15,17 @@ Go to Admin -> Site Access -> API Access.
 # Status
 
 Only a few calls have been implemented.
+
+# Development
+
+Run tests
+
+```
+mix test
+```
+
+See test coverage
+
+```
+mix coveralls
+```
