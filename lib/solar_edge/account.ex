@@ -6,7 +6,7 @@ defmodule SolarEdge.Account do
   """
   alias SolarEdge.{Client, Site, Transform}
 
-  @client Application.compile_env(:solar_edge, :client, SolarEdge.Client)
+  @client Application.compile_env(:solar_edge, :solar_edge_client, SolarEdge.Client)
 
   @doc ~S"""
   Fetch a list of sites accessible by the supplied client API key
