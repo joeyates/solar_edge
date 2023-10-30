@@ -2,7 +2,7 @@ defmodule SolarEdge.SiteTest do
   use ExUnit.Case, async: true
 
   import Mox
-  alias SolarEdge.{Client, Location, PowerReading, Site}
+  alias SolarEdge.{Client, Location, PowerReading, Site, Transform}
 
   @time_zone "Europe/Berlin"
 
@@ -13,17 +13,19 @@ defmodule SolarEdge.SiteTest do
     client: Client.new("my_key"),
     location: %Location{time_zone: @time_zone}
   }
-  @moduletag last_midnight: DateTime.now!(@time_zone)
+
+  def relative_date_time(offset) do
+    DateTime.now!(@time_zone)
+    |> DateTime.add(offset, :day)
     |> DateTime.to_date()
     |> DateTime.new!(~T[00:00:00], @time_zone)
-  @moduletag next_midnight: DateTime.now!(@time_zone)
-    |> DateTime.add(1, :day)
-    |> DateTime.to_date()
-    |> DateTime.new!(~T[00:00:00], @time_zone)
-  @moduletag day_after_midnight: DateTime.now!(@time_zone)
-    |> DateTime.add(2, :day)
-    |> DateTime.to_date()
-    |> DateTime.new!(~T[00:00:00], @time_zone)
+  end
+
+  def relative_api_date_time(offset) do
+    offset
+    |> relative_date_time()
+    |> Transform.datetime_to_api_string()
+  end
 
   describe ".new_from_api/2" do
     @describetag client: Client.new("my_key")
@@ -53,9 +55,9 @@ defmodule SolarEdge.SiteTest do
       |> DateTime.to_date()
       |> Date.add(1)
 
-    setup context do
-      last_midnight = context.last_midnight |> SolarEdge.Transform.datetime_to_api_string()
-      day_after_midnight = context.day_after_midnight |> SolarEdge.Transform.datetime_to_api_string()
+    setup do
+      last_midnight = relative_api_date_time(0)
+      day_after_midnight = relative_api_date_time(2)
       resp = %Req.Response{
         body: %{
           "energy" => %{
@@ -79,9 +81,9 @@ defmodule SolarEdge.SiteTest do
   end
 
   describe "power/2" do
-    setup context do
-      last_midnight = context.last_midnight |> SolarEdge.Transform.datetime_to_api_string()
-      day_after_midnight = context.day_after_midnight |> SolarEdge.Transform.datetime_to_api_string()
+    setup do
+      last_midnight = relative_api_date_time(0)
+      day_after_midnight = relative_api_date_time(2)
       resp = %Req.Response{
         body: %{
           "power" => %{
@@ -98,7 +100,7 @@ defmodule SolarEdge.SiteTest do
     end
 
     test "it returns readings", context do
-      {_, readings} = Site.power(context.site, start_time: context.last_midnight, end_time: context.next_midnight)
+      {_, readings} = Site.power(context.site, start_time: relative_date_time(0), end_time: relative_date_time(1))
 
       assert %PowerReading{value: 42} = hd(readings)
     end
@@ -116,13 +118,13 @@ defmodule SolarEdge.SiteTest do
     end
 
     test "it skips returned readings after the end of the requested range", context do
-      {_, readings} = Site.power(context.site, start_time: context.last_midnight, end_time: context.next_midnight)
+      {_, readings} = Site.power(context.site, start_time: relative_date_time(0), end_time: relative_date_time(1))
 
       assert length(readings) == 1
     end
 
     test "it returns :ok", context do
-      assert {:ok, _readings} = Site.power(context.site, start_time: context.last_midnight, end_time: context.next_midnight)
+      assert {:ok, _readings} = Site.power(context.site, start_time: relative_date_time(0), end_time: relative_date_time(1))
     end
   end
 end
