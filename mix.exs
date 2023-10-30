@@ -12,6 +12,7 @@ defmodule SolarEdge.MixProject do
       deps: deps(),
       consolidate_protocols: Mix.env() != :test,
       test_coverage: [tool: ExCoveralls],
+      package: package(),
       preferred_cli_env: [
         coveralls: :test,
         "coveralls.detail": :test,
@@ -36,9 +37,20 @@ defmodule SolarEdge.MixProject do
   defp deps do
     [
       {:excoveralls, ">= 0.0.0", only: :test},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:mox, ">= 0.0.0", only: :test, runtime: false},
       {:req, "~> 0.4.5"},
       {:time_zone_info, "~> 0.6.5"}
     ]
+  end
+
+  defp package do
+    %{
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => "https://github.com/joeyates/solar_edge"
+      },
+      maintainers: ["Joe Yates"]
+    }
   end
 end
