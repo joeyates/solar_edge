@@ -42,12 +42,12 @@ defmodule SolarEdge.Site do
   Paginates if the requested time range is more than a month.
 
   Options:
-  * start_time: Optional, defaults to start of today,
-  * end_time: Optional, defaults to start_time + 1 day
+  * end_time: Optional, defaults to midnight tonight,
+  * start_time: Optional, defaults to 30 days before end_time.
   """
   def power(%__MODULE__{} = site, opts \\ []) do
-    period_start_time = opts[:start_time] || previous_midnight(site)
-    period_end_time = opts[:end_time] || DateTime.add(period_start_time, 30, :day)
+    period_end_time = opts[:end_time] || next_midnight(site)
+    period_start_time = opts[:start_time] || DateTime.add(period_end_time, -30, :day)
 
     Stream.resource(
       fn -> period_start_time end,
@@ -104,9 +104,10 @@ defmodule SolarEdge.Site do
 
   @midnight ~T[00:00:00]
 
-  defp previous_midnight(site) do
+  defp next_midnight(site) do
     site
     |> today()
+    |> Date.add(1)
     |> DateTime.new!(@midnight, site.location.time_zone)
   end
 end

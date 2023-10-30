@@ -6,6 +6,8 @@ defmodule SolarEdge.SiteTest do
 
   @time_zone "Europe/Berlin"
 
+  setup :verify_on_exit!
+
   describe ".new_from_api/2" do
     @describetag client: Client.new("my_key")
     @describetag data: %{id: 42, location: %{address: "32 High Street"}}
@@ -59,13 +61,26 @@ defmodule SolarEdge.SiteTest do
         }
       }
       stub(SolarEdge.MockClient, :get!, fn _, _, _ -> resp end)
-      :ok
+
+      %{resp: resp}
     end
 
     test "it returns readings", context do
       {_, readings} = Site.power(context.site, start_time: context.today, end_time: context.tomorrow)
 
       assert %PowerReading{value: 42} = hd(readings)
+    end
+
+    test "it defaults to the last month", context do
+      month_ago =
+        context.tomorrow
+        |> DateTime.add(-30, :day)
+        |> SolarEdge.Transform.datetime_to_api_string()
+      tomorrow = context.tomorrow |> SolarEdge.Transform.datetime_to_api_string()
+      expected_params = [startTime: month_ago, endTime: tomorrow]
+      expect(SolarEdge.MockClient, :get!, fn _, _, params: ^expected_params -> context.resp end)
+
+      Site.power(context.site)
     end
 
     test "it skips returned readings after the end of the requested range", context do
