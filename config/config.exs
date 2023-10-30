@@ -5,7 +5,9 @@ config :elixir,
 
 case config_env() do
   :test ->
+    config :solar_edge, req: MockReq
     config :solar_edge, solar_edge_client: SolarEdge.MockClient
+    config :logger, backends: []
 
   _ ->
     nil

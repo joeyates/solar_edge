@@ -9,6 +9,8 @@ defmodule SolarEdge.Client do
 
   @base_url "https://monitoringapi.solaredge.com"
 
+  @req Application.compile_env(:solar_edge, :req, Req)
+
   def new(api_key) do
     %__MODULE__{api_key: api_key}
   end
@@ -22,7 +24,7 @@ defmodule SolarEdge.Client do
     params = params(client, params)
 
     Req.new(url: url, headers: headers(), params: params)
-    |> Req.get!()
+    |> @req.get!()
     |> tap(&Logger.debug("GET #{url}: #{inspect(&1)}"))
     |> then(& {:ok, &1})
   end
