@@ -1,6 +1,5 @@
 defmodule SolarEdge.SiteTest do
   use ExUnit.Case, async: true
-  import Mox
 
   setup do
     client = SolarEdge.Client.new("my_key")
