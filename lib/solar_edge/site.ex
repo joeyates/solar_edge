@@ -20,13 +20,19 @@ defmodule SolarEdge.Site do
   defstruct @keys ++ @structs
 
   def new_from_api(data, client) do
-    location = Location.new_from_api(data.location)
+    location = Location.new_from_api!(data.location)
 
     data
     |> Map.take(@keys)
     |> Map.put(:client, client)
     |> Map.put(:location, location)
     |> then(&struct!(__MODULE__, &1))
+    |> then(& {:ok, &1})
+  end
+
+  def new_from_api!(data, client) do
+    {:ok, site} = new_from_api(data, client)
+    site
   end
 
   @doc """
@@ -66,6 +72,12 @@ defmodule SolarEdge.Site do
       fn nil -> nil end
     )
     |> Enum.to_list()
+    |> then(& {:ok, &1})
+  end
+
+  def power!(site, opts \\ []) do
+    {:ok, readings} = power(site, opts)
+    readings
   end
 
   defp power_page(%__MODULE__{} = site, start_time, end_time) do
@@ -76,10 +88,10 @@ defmodule SolarEdge.Site do
       endTime: Transform.datetime_to_api_string(end_time)
     ]
 
-    Client.get(site.client, path, params: params)
+    Client.get!(site.client, path, params: params)
     |> get_in([Access.key!(:body), "power", "values"])
     |> Transform.symbolize()
-    |> Enum.map(&PowerReading.new_from_api(&1, site))
+    |> Enum.map(&PowerReading.new_from_api!(&1, site))
   end
 
   defp today(site) do

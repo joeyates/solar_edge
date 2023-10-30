@@ -18,6 +18,12 @@ defmodule SolarEdge.Client do
     Req.new(url: url, headers: headers(), params: params)
     |> Req.get!()
     |> tap(&Logger.debug("GET #{url}: #{inspect(&1)}"))
+    |> then(& {:ok, &1})
+  end
+
+  def get!(client, path, opts \\ []) do
+    {:ok, %Req.Response{status: 200} = response} = get(client, path, opts)
+    response
   end
 
   defp headers do

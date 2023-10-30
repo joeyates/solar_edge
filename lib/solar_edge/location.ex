@@ -14,5 +14,11 @@ defmodule SolarEdge.Location do
     data
     |> Map.take(@keys)
     |> then(&struct!(__MODULE__, &1))
+    |> then(& {:ok, &1})
+  end
+
+  def new_from_api!(data) do
+    {:ok, location} = new_from_api(data)
+    location
   end
 end

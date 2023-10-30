@@ -6,7 +6,7 @@ defmodule SolarEdge.PowerReading do
 
   iex> location = %SolarEdge.Location{time_zone: "Europe/Berlin"}
   iex> site = %SolarEdge.Site{location: location}
-  iex> reading = SolarEdge.PowerReading.new_from_api(%{date: "2023-10-18 00:15:00", value: 3}, site)
+  iex> {:ok, reading} = SolarEdge.PowerReading.new_from_api(%{date: "2023-10-18 00:15:00", value: 3}, site)
   iex> reading.date_time
   #DateTime<2023-10-18 00:15:00+02:00 CEST Europe/Berlin>
   iex> reading.value
@@ -34,6 +34,12 @@ defmodule SolarEdge.PowerReading do
       value: data.value
     }
     |> then(&struct!(__MODULE__, &1))
+    |> then(& {:ok, &1})
+  end
+
+  def new_from_api!(data, site) do
+    {:ok, reading} = new_from_api(data, site)
+    reading
   end
 
   def to_row(%__MODULE__{} = reading) do
