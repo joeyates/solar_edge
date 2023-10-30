@@ -76,10 +76,15 @@ defmodule SolarEdge.Transform do
 
   @doc """
   Convert a DateTime to a string, **without** timezone information
+
+      iex> date_time = DateTime.new!(~D[2023-10-30], ~T[17:26:26.770281], "Europe/Berlin")
+      iex> SolarEdge.Transform.datetime_to_api_string(date_time)
+      "2023-10-30 17:26:26"
   """
   def datetime_to_api_string(%DateTime{} = dt) do
     dt
-    |> DateTime.to_string()
-    |> String.replace(~r/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}).*/, "\\1")
+    |> DateTime.to_naive()
+    |> NaiveDateTime.truncate(:second)
+    |> NaiveDateTime.to_string()
   end
 end
