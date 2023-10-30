@@ -11,6 +11,10 @@ defmodule SolarEdge.PowerReading do
   #DateTime<2023-10-18 00:15:00+02:00 CEST Europe/Berlin>
   iex> reading.value
   3
+  # Now with an ambiguous time
+  iex> {:ok, reading} = SolarEdge.PowerReading.new_from_api(%{date: "2023-10-29 02:00:00", value: 3}, site)
+  iex> reading.date_time
+  #DateTime<2023-10-29 02:00:00+02:00 CEST Europe/Berlin>
   """
   def new_from_api(data, site) do
     naive = NaiveDateTime.from_iso8601!(data.date)
@@ -21,10 +25,6 @@ defmodule SolarEdge.PowerReading do
           date_time
 
         other ->
-          if elem(other, 0) != :ambiguous do
-            raise "Unexpected result from DateTime.from_naive/2: #{inspect(other)}"
-          end
-
           elem(other, 1)
       end
 
