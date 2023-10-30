@@ -69,7 +69,7 @@ defmodule SolarEdge.Site do
           {:halt, nil}
         end
       end,
-      fn nil -> nil end
+      fn _ -> nil end
     )
     |> Enum.to_list()
     |> then(& {:ok, &1})
