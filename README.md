@@ -1,3 +1,5 @@
+![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/joeyates/9845bfb4ce29ec18fcb30b26611ab1cf/raw/coverage.json)
+
 # SolarEdge
 
 This is an Elixir client library for the [SolarEdge](https://www.solaredge.com) monitoring API.
