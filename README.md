@@ -1,3 +1,4 @@
+[![Build Status](https://github.com/joeyates/solar_edge/actions/workflows/ci.yml/badge.svg)][CI Status]
 ![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/joeyates/9845bfb4ce29ec18fcb30b26611ab1cf/raw/coverage.json)
 
 # SolarEdge
@@ -38,3 +39,7 @@ Generate HTML coverage report
 mix coveralls.html
 open cover/excoveralls.html
 ```
+
+* [CI Status]
+
+[CI Status]: https://github.com/joeyates/solar_edge/actions/workflows/ci.yml
