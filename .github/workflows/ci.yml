@@ -32,7 +32,7 @@ jobs:
       run: mix test
     - name: Save coverage percentage to environment
       run: |
-        mix coveralls | grep -P 'TOTAL' | grep -Po '[\d\.]+' | awk '{print "COVERAGE="int($1+0.5)}' >> $GITHUB_ENV
+        mix coveralls | grep -P 'TOTAL' | grep -Po '[\d\.]+' | awk '{print "COVERAGE="int($1+0.5)"%"}' >> $GITHUB_ENV
     - name: Create Coverage Badge
       if: ${{github.ref == 'refs/heads/main'}}
       uses: schneegans/dynamic-badges-action@v1.6.0
