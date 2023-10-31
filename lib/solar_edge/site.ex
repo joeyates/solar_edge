@@ -97,7 +97,8 @@ defmodule SolarEdge.Site do
   """
   def power(%__MODULE__{} = site, opts \\ []) do
     period_end_time = opts[:end_time] || next_midnight(site)
-    period_start_time = opts[:start_time] || DateTime.add(period_end_time, -30, :day)
+    period_start_time = opts[:start_time] ||
+      period_end_time |> DateTime.add(-30, :day)
 
     Stream.resource(
       fn -> period_start_time end,

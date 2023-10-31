@@ -106,12 +106,11 @@ defmodule SolarEdge.SiteTest do
     end
 
     test "it defaults to the last month", context do
-      month_ago =
-        context.next_midnight
-        |> DateTime.add(-30, :day)
-        |> SolarEdge.Transform.datetime_to_api_string()
-      next_midnight = context.next_midnight |> SolarEdge.Transform.datetime_to_api_string()
-      expected_params = [startTime: month_ago, endTime: next_midnight]
+      tomorrow_midnight = relative_date_time(1)
+      twenty_nine_days_ago_midnight = tomorrow_midnight |> DateTime.add(-30, :day)
+      start_time = twenty_nine_days_ago_midnight |> Transform.datetime_to_api_string()
+      end_time = tomorrow_midnight |> Transform.datetime_to_api_string()
+      expected_params = [startTime: start_time, endTime: end_time]
       expect(SolarEdge.MockClient, :get!, fn _, _, params: ^expected_params -> context.resp end)
 
       Site.power(context.site)
