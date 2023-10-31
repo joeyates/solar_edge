@@ -30,3 +30,16 @@ jobs:
       run: mix deps.get
     - name: Run tests
       run: mix test
+    - name: Save coverage percentage to environment
+      run: |
+        mix coveralls | grep -P 'TOTAL' | grep -Po '[\d\.]+' | awk '{print "COVERAGE="int($1+0.5)}' >> $GITHUB_ENV
+    - name: Create Coverage Badge
+      if: ${{github.ref == 'refs/heads/main'}}
+      uses: schneegans/dynamic-badges-action@v1.6.0
+      with:
+        auth: ${{secrets.GIST_ACCESS}}
+        gistID: 9845bfb4ce29ec18fcb30b26611ab1cf
+        filename: coverage.json
+        label: Coverage
+        message: ${{env.COVERAGE}}
+        color: brightgreen
