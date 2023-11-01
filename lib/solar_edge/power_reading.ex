@@ -48,6 +48,10 @@ defmodule SolarEdge.PowerReading do
     reading
   end
 
+  @doc ~S"""
+  Returns a list of the fields for serialization
+  """
+
   def to_row(%__MODULE__{} = reading) do
     [DateTime.to_iso8601(reading.date_time), reading.value]
   end
