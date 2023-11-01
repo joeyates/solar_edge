@@ -81,10 +81,15 @@ defmodule SolarEdge.Site do
       endDate: Date.to_iso8601(end_date)
     ]
 
-    @client.get!(site.client, path, params: params)
-    |> get_in([Access.key!(:body), "energy", "values"])
+    energy =
+      @client.get!(site.client, path, params: params)
+      |> get_in([Access.key!(:body), "energy"])
+
+    unit = energy["unit"]
+
+    energy["values"]
     |> Transform.symbolize()
-    |> Enum.map(&PowerReading.new_from_api!(&1, site))
+    |> Enum.map(&PowerReading.new_from_api!(&1, unit, site))
   end
 
   @doc """
@@ -141,10 +146,15 @@ defmodule SolarEdge.Site do
       endTime: Transform.datetime_to_api_string(end_time)
     ]
 
-    @client.get!(site.client, path, params: params)
-    |> get_in([Access.key!(:body), "power", "values"])
+    power =
+      @client.get!(site.client, path, params: params)
+      |> get_in([Access.key!(:body), "power"])
+
+    unit = power["unit"]
+
+    power["values"]
     |> Transform.symbolize()
-    |> Enum.map(&PowerReading.new_from_api!(&1, site))
+    |> Enum.map(&PowerReading.new_from_api!(&1, unit, site))
   end
 
   defp today(site) do
